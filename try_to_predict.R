@@ -32,3 +32,4 @@ combos <- combos %>% separate(keyName, c("X1", "X2", "X3", "X4"), " ")
 test <- combos[combos$X1 == "a", ]
 test2 <- aggregate(test$value, list(x2 = test$X2), sum)
 test2[order(-test2$x),"x2"][1]
+
