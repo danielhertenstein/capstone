@@ -1,3 +1,8 @@
+library(dplyr)
+library(tidyr)
+
+# load("news.Rda")
+
 my_predict <- function(in_string) {
   pieces <- unlist(strsplit(in_string, " "))
   switch(length(pieces),
