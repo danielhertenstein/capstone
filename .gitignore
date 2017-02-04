@@ -88,3 +88,5 @@ Coursera-SwiftKey/final/ru_RU/ru_RU.news.txt
 Coursera-SwiftKey/final/ru_RU/ru_RU.twitter.txt
 *.Rda
 test_news.txt
+test_blog.txt
+test_twitter.txt
