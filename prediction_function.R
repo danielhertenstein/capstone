@@ -1,7 +1,7 @@
 library(dplyr)
 library(tidyr)
 
-# load("news.Rda")
+load("en_US.Rda")
 
 my_predict <- function(in_string) {
   in_string <- tolower(in_string)
