@@ -10,7 +10,16 @@ coverage <- function(counts, end_point) {
 news <- readLines(file("Coursera-SwiftKey/final/en_US/en_US.news.txt", "rb"), skipNul = TRUE, encoding = "UTF-8")
 closeAllConnections()
 
-news_corpus <- corpus(news)
+# Grab a sample of 80%
+set.seed(12)
+samples <- sample(length(news), as.integer(length(news) * 0.8))
+train_news <- news[samples]
+test_news <- news[-samples]
+
+# Save the test set for later
+write(test_news, "test_news.txt")
+
+news_corpus <- corpus(train_news)
 
 news_dfm <- dfm(news_corpus, removeNumbers=TRUE, removePunc=TRUE, removeSymbols=TRUE, removeTwitter=TRUE, removeURL=TRUE)
 freqs <- colSums(news_dfm)
@@ -35,7 +44,7 @@ top_90 <- names(topfeatures(news_dfm, 9000))
 three_grams <- dfm(news_corpus, ngrams=3, removeNumbers=TRUE, removePunc=TRUE, removeSymbols=TRUE, removeTwitter=TRUE, removeURL=TRUE)
 three_freqs <- colSums(three_grams)
 
-four_grams <- dfm(news_corpus, ngrams=4, removeNumbers=TRUE, removePunc=TRUE, removeSymbols=TRUE, removeTwitter=TRUE, removeURL=TRUE, remove=stopwords("english"))
+four_grams <- dfm(news_corpus, ngrams=4, removeNumbers=TRUE, removePunc=TRUE, removeSymbols=TRUE, removeTwitter=TRUE, removeURL=TRUE)
 four_freqs <- colSums(four_grams)
 
 rm(news)
