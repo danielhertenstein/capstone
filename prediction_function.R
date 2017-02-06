@@ -5,7 +5,7 @@ load("en_US.Rda")
 
 my_predict <- function(in_string) {
   in_string <- tolower(in_string)
-  pieces <- unlist(strsplit(in_string, " "))
+  pieces <- tail(unlist(strsplit(in_string, " ")), 3)
   switch(length(pieces),
          predict_1(pieces),
          predict_2(pieces),
@@ -44,5 +44,4 @@ predict_3 <- function(pieces) {
 # Can we use corrleation between words in the sentence for unknown n-grams?
 # Replace the first occurrence of every word with <UNK>, then process as normal.
 # Adding <S> and </S> to the beginning and ending of every sentence.
-# Adding 1 to every frequency.
 # What to do when two options have the same frequencies. "I want fish" and "I want tacos" appear an equal amount of times.
