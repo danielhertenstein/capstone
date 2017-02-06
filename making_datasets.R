@@ -1,46 +1,64 @@
-library(tm)
-library(RWeka)
 library(dplyr)
 library(tidyr)
+library(quanteda)
 
-# Read in all of the news data
-news <- readLines(file("Coursera-SwiftKey/final/en_US/en_US.news.txt", "rb"), skipNul = TRUE, encoding = "UTF-8")
+set.seed(12)
+
+# blogs <- readLines(file("Coursera-SwiftKey/final/en_US/en_US.blogs.txt", "r"), skipNul = TRUE, encoding = "UTF-8")
+# closeAllConnections()
+
+# Grab a sample of 80%
+# samples <- sample(length(blogs), as.integer(length(blogs) * 0.8))
+# train_blogs <- blogs[samples]
+# test <- blogs[-samples]
+
+# Save the test set for later
+# write(test, "test_blogs.txt")
+
+news <- readLines(file("Coursera-SwiftKey/final/en_US/en_US.news.txt", "r"), skipNul = TRUE, encoding = "UTF-8")
 closeAllConnections()
 
 # Grab a sample of 80%
-set.seed(12)
 samples <- sample(length(news), as.integer(length(news) * 0.8))
 train_news <- news[samples]
-test_news <- news[-samples]
+test <- news[-samples]
 
 # Save the test set for later
-write(test_news, "test_news.txt")
+write(test, "test_news.txt")
 
-# Make a test courpus
-train_corpus <- VCorpus(VectorSource(train_news))
+twitter <- readLines(file("Coursera-SwiftKey/final/en_US/en_US.twitter.txt", "r"), skipNul = TRUE, encoding = "UTF-8")
+closeAllConnections()
 
-# Remove everything
-# train_corpus <- tm_map(train_corpus, removeNumbers)
-# train_corpus <- tm_map(train_corpus, stripWhitespace)
-train_corpus <- tm_map(train_corpus, content_transformer(tolower))
-# train_corpus <- tm_map(train_corpus, stemDocument)
-# train_corpus <- tm_map(train_corpus, removePunctuation)
-# train_corpus <- tm_map(train_corpus, removeSparseTerms)
+# Grab a sample of 80%
+samples <- sample(length(twitter), as.integer(length(twitter) * 0.8))
+train_twitter <- twitter[samples]
+test <- twitter[-samples]
 
-# 4-grams
-FourGramTokenizer <- function(x) NGramTokenizer(x, Weka_control(min = 4, max = 4))
-four_grams <- TermDocumentMatrix(train_corpus, control = list(tokenize = FourGramTokenizer,
-                                                              removeNumbers = TRUE,
-                                                              stripWhitespace = TRUE,
-                                                              removePunctuation = TRUE
-                                                              )
-                                 )
+# Save the test set for later
+write(test, "test_twitter.txt")
 
-# Get the frequencies of each 4-gram
-freqs <- slam::row_sums(four_grams)
+# my_corpus <- corpus(train_blogs) + corpus(train_news) + corpus(train_twitter)
+my_corpus <- corpus(train_news) + corpus(train_twitter)
 
-# Create the dataframe that we will traverse
-combos <- data.frame(keyName=names(freqs), value=freqs, row.names=NULL)
-combos <- combos %>% separate(keyName, c("X1", "X2", "X3", "X4"), " ")
+four_grams <- dfm(my_corpus, ngrams=4, removeNumbers=TRUE, removePunc=TRUE, removeSymbols=TRUE, removeTwitter=TRUE, removeURL=TRUE)
+freqs <- colSums(four_grams)
 
-save(combos, file="news.Rda")
+# rm(blogs)
+rm(news)
+rm(twitter)
+# rm(train_blogs)
+rm(train_news)
+rm(train_twitter)
+rm(samples)
+rm(test)
+rm(my_corpus)
+rm(four_grams)
+gc()
+
+multi_hits <- freqs[freqs > 1]
+
+combos <- data.frame(keyName=names(multi_hits), value=multi_hits, row.names=NULL)
+combos <- combos %>% separate(keyName, c("X1", "X2", "X3", "X4"), "_")
+
+# save(combos, file="en_US.Rda")
+save(combos, file="news_and_twitter.Rda")
