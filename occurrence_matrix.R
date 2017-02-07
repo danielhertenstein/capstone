@@ -35,5 +35,5 @@ top_90 <- names(topfeatures(my_dfm, 16815))
 
 top_occurrences <- my_fcm[top_90]
 which.max(colSums(top_occurrences[c("hello", "bat", "apple")]))
-
+  
 for (feature in top_90) {top_occurrences[feature, feature]}
