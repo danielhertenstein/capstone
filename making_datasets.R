@@ -12,6 +12,8 @@ samples <- sample(length(blogs), as.integer(length(blogs) * 0.8))
 train_blogs <- blogs[samples]
 test <- blogs[-samples]
 
+blogs_sentences <- char_segment(train_blogs, what="sentences")
+
 # Save the test set for later
 write(test, "test_blogs.txt")
 
@@ -22,6 +24,8 @@ closeAllConnections()
 samples <- sample(length(news), as.integer(length(news) * 0.8))
 train_news <- news[samples]
 test <- news[-samples]
+
+news_sentences <- char_segment(train_news, what="sentences")
 
 # Save the test set for later
 write(test, "test_news.txt")
@@ -34,14 +38,19 @@ samples <- sample(length(twitter), as.integer(length(twitter) * 0.8))
 train_twitter <- twitter[samples]
 test <- twitter[-samples]
 
+twitter_sentences <- char_segment(train_twitter, what="sentences")
+
 # Save the test set for later
 write(test, "test_twitter.txt")
 
-my_corpus <- corpus(train_blogs) + corpus(train_news) + corpus(train_twitter)
-# my_corpus <- corpus(train_news) + corpus(train_twitter)
+my_corpus <- corpus(blogs_sentences) + corpus(news_sentences) + corpus(twitter_sentences)
 
-four_grams <- dfm(my_corpus, ngrams=4, removeNumbers=TRUE, removePunc=TRUE, removeSymbols=TRUE, removeTwitter=TRUE, removeURL=TRUE)
-freqs <- colSums(four_grams)
+toks <- tokens(my_corpus, removeNumbers=TRUE, removePunct=TRUE, removeSymbols=TRUE, removeTwitter=TRUE, removeURL=TRUE)
+# toks <- removeFeatures(toks, stopwords())
+toks <- tokens_tolower(toks)
+
+grams <- dfm(tokens_ngrams(toks,4))
+freqs <- colSums(grams)
 
 rm(blogs)
 rm(news)
@@ -49,15 +58,18 @@ rm(twitter)
 rm(train_blogs)
 rm(train_news)
 rm(train_twitter)
+rm(blogs_sentences)
+rm(news_sentences)
+rm(twitter_sentences)
 rm(samples)
 rm(test)
 rm(my_corpus)
-rm(four_grams)
+rm(grams)
 gc()
 
-multi_hits <- freqs[freqs > 1]
+# multi_hits <- freqs[freqs > 1]
 
-combos <- data.frame(keyName=names(multi_hits), value=multi_hits, row.names=NULL)
+combos <- data.frame(keyName=names(freqs), value=freqs, row.names=NULL)
 combos <- combos %>% separate(keyName, c("X1", "X2", "X3", "X4"), "_")
 
 save(combos, file="en_US.Rda")
