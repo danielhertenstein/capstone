@@ -94,7 +94,7 @@ my_predict <- function(in_string) {
 }
 
 predict_0 <- function(pieces) {
-  as.character(combos[order(-combos[,"value"]),"X1"][1])
+  as.character(combos[order(-combos[,"value"]),"X1"][1:5])
 }
 
 predict_1 <- function(pieces) {
@@ -105,7 +105,7 @@ predict_1 <- function(pieces) {
   else {
     possibilities <- possibilities[!(possibilities$X2 %in% stopwords()), ]
     combined <- aggregate(possibilities$value, list(x2 = possibilities$X2), sum)
-    combined[order(-combined$x),"x2"][1]
+    combined[order(-combined$x),"x2"][1:5]
   }
 }
 
@@ -117,7 +117,7 @@ predict_2 <- function(pieces) {
   else {
     possibilities <- possibilities[!(possibilities$X3 %in% stopwords()), ]
     combined <- aggregate(possibilities$value, list(x3 = possibilities$X3), sum)
-    combined[order(-combined$x),"x3"][1]
+    combined[order(-combined$x),"x3"][1:5]
   }
 }
 
@@ -129,6 +129,6 @@ predict_3 <- function(pieces) {
   else {
     possibilities <- possibilities[!(possibilities$X4 %in% stopwords()), ]
     combined <- aggregate(possibilities$value, list(x4 = possibilities$X4), sum)
-    combined[order(-combined$x),"x4"][1]
+    combined[order(-combined$x),"x4"][1:5]
   }
 }
