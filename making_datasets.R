@@ -8,45 +8,49 @@ blogs <- readLines(file("Coursera-SwiftKey/final/en_US/en_US.blogs.txt", "r"), s
 closeAllConnections()
 
 # Grab a sample of 80%
-samples <- sample(length(blogs), as.integer(length(blogs) * 0.8))
-train_blogs <- blogs[samples]
-test <- blogs[-samples]
+#samples <- sample(length(blogs), as.integer(length(blogs) * 0.8))
+#train_blogs <- blogs[samples]
+#test <- blogs[-samples]
 
-blogs_sentences <- char_segment(train_blogs, what="sentences")
+blogs_sentences <- char_segment(blogs, what="sentences")
 
 # Save the test set for later
-write(test, "test_blogs.txt")
+#write(test, "test_blogs.txt")
 
 news <- readLines(file("Coursera-SwiftKey/final/en_US/en_US.news.txt", "r"), skipNul = TRUE, encoding = "UTF-8")
 closeAllConnections()
 
 # Grab a sample of 80%
-samples <- sample(length(news), as.integer(length(news) * 0.8))
-train_news <- news[samples]
-test <- news[-samples]
+#samples <- sample(length(news), as.integer(length(news) * 0.8))
+#train_news <- news[samples]
+#test <- news[-samples]
 
-news_sentences <- char_segment(train_news, what="sentences")
+news_sentences <- char_segment(news, what="sentences")
 
 # Save the test set for later
-write(test, "test_news.txt")
+#write(test, "test_news.txt")
 
 twitter <- readLines(file("Coursera-SwiftKey/final/en_US/en_US.twitter.txt", "r"), skipNul = TRUE, encoding = "UTF-8")
 closeAllConnections()
 
 # Grab a sample of 80%
-samples <- sample(length(twitter), as.integer(length(twitter) * 0.8))
-train_twitter <- twitter[samples]
-test <- twitter[-samples]
+#samples <- sample(length(twitter), as.integer(length(twitter) * 0.8))
+#train_twitter <- twitter[samples]
+#test <- twitter[-samples]
 
-twitter_sentences <- char_segment(train_twitter, what="sentences")
+twitter_sentences <- char_segment(twitter, what="sentences")
 
 # Save the test set for later
-write(test, "test_twitter.txt")
+#write(test, "test_twitter.txt")
 
 my_corpus <- corpus(blogs_sentences) + corpus(news_sentences) + corpus(twitter_sentences)
 
+profanities <- readLines(file("en_profanity.txt", "r"))
+closeAllConnections()
+
 toks <- tokens(my_corpus, removeNumbers=TRUE, removePunct=TRUE, removeSymbols=TRUE, removeTwitter=TRUE, removeURL=TRUE)
 # toks <- removeFeatures(toks, stopwords())
+toks <- removeFeatures(toks, profanities)
 toks <- tokens_tolower(toks)
 
 grams <- dfm(tokens_ngrams(toks,4))
@@ -55,14 +59,14 @@ freqs <- colSums(grams)
 rm(blogs)
 rm(news)
 rm(twitter)
-rm(train_blogs)
-rm(train_news)
-rm(train_twitter)
+#rm(train_blogs)
+#rm(train_news)
+#rm(train_twitter)
 rm(blogs_sentences)
 rm(news_sentences)
 rm(twitter_sentences)
-rm(samples)
-rm(test)
+#rm(samples)
+#rm(test)
 rm(my_corpus)
 rm(grams)
 gc()
