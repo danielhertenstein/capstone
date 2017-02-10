@@ -1,0 +1,12 @@
+---
+title: "Text Prediction App Milestone Report"
+author: "Daniel Hertenstein"
+date: "February 10, 2017"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
