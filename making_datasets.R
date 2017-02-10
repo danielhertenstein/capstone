@@ -2,86 +2,60 @@ library(dplyr)
 library(tidyr)
 library(quanteda)
 
-set.seed(12)
-
-#blogs <- readLines(file("Coursera-SwiftKey/final/en_US/en_US.blogs.txt", "r"), skipNul = TRUE, encoding = "UTF-8")
-#closeAllConnections()
-
-# Grab a sample of 80%
-#samples <- sample(length(blogs), as.integer(length(blogs) * 0.8))
-#train_blogs <- blogs[samples]
-#test <- blogs[-samples]
-
-#blogs_sentences <- char_segment(blogs, what="sentences")
-
-# Save the test set for later
-#write(test, "test_blogs.txt")
-
-news <- readLines(file("Coursera-SwiftKey/final/en_US/en_US.news.txt", "r"), skipNul = TRUE, encoding = "UTF-8")
+# Read in the news text and break it up into sentences
+news <- readLines(file("Coursera-SwiftKey/final/en_US/en_US.news.txt", "rb"), skipNul = TRUE, encoding = "UTF-8")
 closeAllConnections()
-
-# Grab a sample of 80%
-#samples <- sample(length(news), as.integer(length(news) * 0.8))
-#train_news <- news[samples]
-#test <- news[-samples]
-
+# Splitting the text into sentences prevents the creation of n-grams that span sentences
 news_sentences <- char_segment(news, what="sentences")
 
-# Save the test set for later
-#write(test, "test_news.txt")
-
-twitter <- readLines(file("Coursera-SwiftKey/final/en_US/en_US.twitter.txt", "r"), skipNul = TRUE, encoding = "UTF-8")
+# Read in the twitter text and break it up into sentencse
+twitter <- readLines(file("Coursera-SwiftKey/final/en_US/en_US.twitter.txt", "rb"), skipNul = TRUE, encoding = "UTF-8")
 closeAllConnections()
-
-# Grab a sample of 80%
-#samples <- sample(length(twitter), as.integer(length(twitter) * 0.8))
-#train_twitter <- twitter[samples]
-#test <- twitter[-samples]
-
 twitter_sentences <- char_segment(twitter, what="sentences")
 
-# Save the test set for later
-#write(test, "test_twitter.txt")
-
+# Make our corpus of the two sets of text
 my_corpus <- corpus(news_sentences) + corpus(twitter_sentences)
 
+# Read in our list of profanities that we're going to filter out
 profanities <- readLines(file("en_profanity.txt", "r"))
 closeAllConnections()
 
+# Tokenize each sentence into its words. Remove words that are entirely numbers, punctuation not in the middle of words,
+# all other symbols, any #'s in front of words, and all URLs. Filter out our list of profanities, and turn all the words
+# to lowercase.
 toks <- tokens(my_corpus, removeNumbers=TRUE, removePunct=TRUE, removeSymbols=TRUE, removeTwitter=TRUE, removeURL=TRUE)
-# toks <- removeFeatures(toks, stopwords())
 toks <- removeFeatures(toks, profanities)
 toks <- tokens_tolower(toks)
 
-unigrams <- dfm(toks)
-unifreqs <- colSums(unigrams)
-single_hits <- names(unifreqs[unifreqs == 1])
+# Do a quick cleanup before we use a bunch of memory in making all of the 4-grams
+rm(news)
+rm(twitter)
+rm(news_sentences)
+rm(twitter_sentences)
+rm(my_corpus)
+rm(profanities)
+gc()
 
-multi_toks <- removeFeatures(toks, single_hits)
-
+# Make our 4-grams from the tokens in each sentence. Sum up the frequencies of each 4-gram across all sentences
 grams <- dfm(tokens_ngrams(toks,4))
 freqs <- colSums(grams)
 
-rm(blogs)
-rm(news)
-rm(twitter)
-#rm(train_blogs)
-#rm(train_news)
-#rm(train_twitter)
-rm(blogs_sentences)
-rm(news_sentences)
-rm(twitter_sentences)
-#rm(samples)
-#rm(test)
-rm(my_corpus)
+# Do another cleanup before we use a bunch of memory in making our dataframe
+rm(toks)
 rm(grams)
 gc()
 
-# multi_hits <- freqs[freqs > 1]
-
+# Create a dataframe with columns being the four words of a 4-gram and its number of appearances in texts
+# Each row is a unique 4-gram
 combos <- data.frame(keyName=names(freqs), value=freqs, row.names=NULL)
 combos <- combos %>% separate(keyName, c("X1", "X2", "X3", "X4"), "_")
+
+# Remove stopwords from the final element of all the 4-grams so we don't bother predicting them
 combos <- combos[!(combos$X4 %in% stopwords()), ]
 
+# Clean up the freqs vector
+rm(freqs)
+gc()
+
+# Save our dataset to use with our prediction model
 save(combos, file="en_US.Rda")
-# save(combos, file="news_and_twitter.Rda")
