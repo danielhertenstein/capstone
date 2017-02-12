@@ -1,5 +1,7 @@
 library(dplyr)
 library(tidyr)
+library(data.table)
+library(dtplyr)
 library(quanteda)
 
 # Read in the news text and break it up into sentences
@@ -7,13 +9,11 @@ news <- readLines(file("Coursera-SwiftKey/final/en_US/en_US.news.txt", "rb"), sk
 closeAllConnections()
 # Splitting the text into sentences prevents the creation of n-grams that span sentences
 news_sentences <- char_segment(news, what="sentences")
-news_sentences <- iconv(news_sentences, "latin1", "ASCII", sub="")
 
 # Read in the twitter text and break it up into sentencse
 twitter <- readLines(file("Coursera-SwiftKey/final/en_US/en_US.twitter.txt", "rb"), skipNul = TRUE, encoding = "UTF-8")
 closeAllConnections()
 twitter_sentences <- char_segment(twitter, what="sentences")
-twitter_sentences <- iconv(twitter_sentences, "latin1", "ASCII", sub="")
 
 # Make our corpus of the two sets of text
 my_corpus <- corpus(news_sentences) + corpus(twitter_sentences)
@@ -63,9 +63,14 @@ combo_table <- as.data.table(combos)
 setcolorder(combo_table, c("X3", "X2", "X1", "X4", "value"))
 combo_table <- combo_table[order(X3, X2, X1, X4)]
 
+combo_table[, N := .N, by = .(X4)]
+combo_table <- combo_table[order(-value, -N, X3, X2, X1, X4)]
+combo_table <- combo_table[1:14500000,1:5]
+combo_table <- combo_table[order(X3, X2, X1, X4)]
+
 # Clean up the freqs vector and the data frame
 rm(freqs)
-#rm(combos)
+rm(combos)
 gc()
 
 # Save our dataset to use with our prediction model
