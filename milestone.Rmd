@@ -9,6 +9,10 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
+```{r, echo=FALSE}
+load("report_data.RData")
+```
+
 ## Getting and Loading the Data
 
 The data sets were downloaded from the course website and loaded into R using the readLines method. The data was then transformed into a corpus using the quanteda package to facilitate text mining operations. The two data sets used in this report correspond to text from real news articles and real tweets. The large size of the data files, ~200MB each, make for an extensive sample of how the English language is used in everyday life, and provide good training data for a prediction model.
@@ -25,19 +29,33 @@ closeAllConnections()
 my_corpus <- corpus(news_sentences) + corpus(twitter_sentences)
 ```
 
-## Summary Statistics
+## Summary Statistics and Interesting Findings
 
+The news text file contains 1,010,242 lines, 1,993,065 sentences, and 40,950,892 words, while the twitter text file contains 2,360,148 lines, 3,763,082 sentences, and 37,005,141 words. The plots below show the percentage of all word occurrences covered by the most frequent words. 90% of all word occurrences in the news data test come from the 8,823 most freqent words, only 2.7% of the total 330,446 unique words. For the twitter data set, 90% of all word occurrences come from 1.4% of the total (5,503 of 389,314 unique words).
 
-Word counts, line counts and basic data tables?
+```{r, echo=FALSE}
+library(ggplot2)
+ggplot(news_data, aes(x, y)) + geom_point() + scale_y_continuous(name="Percent of word occurrences covered", breaks=seq(0, 1, 0.1)) + scale_x_continuous(name="Words used") + ggtitle("News Data: Percent of word occurrences\ncovered using most common words")
+ggplot(twitter_data, aes(x, y)) + geom_point() + scale_y_continuous(name="Percent of word occurrences covered", breaks=seq(0, 1, 0.1)) + scale_x_continuous(name="Words used") + ggtitle("Twitter Data: Percent of word occurrences\ncovered using most common words")
 
-## Interesting Findings
+```
 
-### Histograms
-
-### Term Coverage
-
-### 4-gram Coverage
+After creating 4-grams from the combine 5,756,147 sentences, we see that there are a total of 46,809,852 4-grams. 91.5% of the 4-grams only appear once in the combined data set, and to account for 90% of all 4-gram occurrences, it takes 32,539,740 4-grams, 87.4% of the total.
 
 ## Plan for Prediction Algorithm and Shiny App
 
-Create data frame of all 4-grams, using last three words of input string, find corresponding row in the data frame, return top 5 most frequently seen completetions of the input trigram.
+The plan for the prediction algorithm centers around using only the list of 4-grams. We will creating a data frame of all of the 4-grams, containing five columns. The first four columns will be each of the words of each 4-gram, and the fifth coulmn will be number of times the particular 4-gram occurrs in the data set. Using a data frame of 4-grams, we can predict the next word when given a trigram, bigram, or unigram. The process will be the same for each. Extract all of the rows in the data frame that starts with the given N-gram. Order the rows by the value in the occurrences column and select the first row. Whatever word completes the phrase in the selected row will be the prediction. Below is the likely structure of the data frame.
+
+```{r}
+head(combos)
+```
+
+The plan for the app will be relatively straightforward. Before the user is able to do antyhing, the data frame of 4-grams will be loaded into memory. Then the user will be presented with a text box that they can enter any string into. Upon hitting a submit button, we will extract the last three words of the input phrase and use them to predict the next word using the above algorithm. We will then print the prediction out to the screen for the user to see.
+
+## Thoughts Moving Forward
+
+I believe that the major limitation that I will have to contend with is the number of 4-grams. The data frame that contains the X 4-grams is Y GB. Github only allows files up to 100 MB. I will likely have to drop 4-grams that only occurr once, but I am not sure how to select which of those 4-grams to drop.
+
+Similar to this problem is the problem of how to deal with ties in the prediction algorithm. If two possible solution 4-grams occur the same number of times, how should I break the tie and select the right prediction?
+
+The final problem I can see is dealing with uknown N-grams; how to deal with a user input phrase that is not seen in the data frame. This will definitely be a problem given the size constraints of the data frame. I have seen potential solutions to this like backoff and discounting algorithms, so I will need to implement and test them in order to select one.
