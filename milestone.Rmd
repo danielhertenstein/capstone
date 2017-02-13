@@ -9,4 +9,35 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
+## Getting and Loading the Data
 
+The data sets were downloaded from the course website and loaded into R using the readLines method. The data was then transformed into a corpus using the quanteda package to facilitate text mining operations. The two data sets used in this report correspond to text from real news articles and real tweets. The large size of the data files, ~200MB each, make for an extensive sample of how the English language is used in everyday life, and provide good training data for a prediction model.
+
+```{r, eval = FALSE}
+library(quanteda)
+
+news <- readLines(file("Coursera-SwiftKey/final/en_US/en_US.news.txt", "rb"), skipNul = TRUE, encoding = "UTF-8")
+closeAllConnections()
+
+twitter <- readLines(file("Coursera-SwiftKey/final/en_US/en_US.twitter.txt", "rb"), skipNul = TRUE, encoding = "UTF-8")
+closeAllConnections()
+
+my_corpus <- corpus(news_sentences) + corpus(twitter_sentences)
+```
+
+## Summary Statistics
+
+
+Word counts, line counts and basic data tables?
+
+## Interesting Findings
+
+### Histograms
+
+### Term Coverage
+
+### 4-gram Coverage
+
+## Plan for Prediction Algorithm and Shiny App
+
+Create data frame of all 4-grams, using last three words of input string, find corresponding row in the data frame, return top 5 most frequently seen completetions of the input trigram.
